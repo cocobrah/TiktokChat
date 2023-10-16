@@ -1,7 +1,13 @@
 const { WebcastPushConnection } = require('tiktok-live-connector');
+const fs = require('fs');
+const https = require('https');
 const WebSocket = require('ws');
 
-const wss = new WebSocket.Server({ port: 8477 });
+const server = https.createServer({
+    cert: fs.readFileSync('/etc/letsencrypt/live/ttchat.pro/cert.pem'),
+    key: fs.readFileSync('/etc/letsencrypt/live/ttchat.pro/privkey.pem')
+  });
+  const wss = new WebSocket.Server({ server });
 
 // Keep track of streamer to WebcastPushConnection mapping
 const tiktokConnections = {};
@@ -117,6 +123,8 @@ wss.on('connection', (ws) => {
         }
       });
 });
+
+server.listen(8477);
 
 function broadcastToStreamer(streamerUsername, data) {
     wss.clients.forEach((client) => {
